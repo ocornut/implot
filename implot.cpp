@@ -1906,7 +1906,7 @@ bool UpdateInput(ImPlotPlot& plot) {
         }
     }
 
-    const bool can_pan = IO.MouseDown[gp.InputMap.Pan] && ImHasFlag(IO.KeyMods, gp.InputMap.PanMod);
+    const bool can_pan = ImGui::IsMouseDown(gp.InputMap.Pan, plot.ID) && ImHasFlag(IO.KeyMods, gp.InputMap.PanMod);
 
     plot.Held = plot.Held && can_pan;
 
@@ -1968,12 +1968,12 @@ bool UpdateInput(ImPlotPlot& plot) {
 
     // CONTEXT MENU -----------------------------------------------------------
 
-    if (IO.MouseReleased[gp.InputMap.Menu] && !plot.ContextLocked)
+    if (ImGui::IsMouseReleased(gp.InputMap.Menu, plot.ID) && !plot.ContextLocked)
         gp.OpenContextThisFrame = true;
 
     if (selecting || panning)
         plot.ContextLocked = true;
-    else if (!(IO.MouseDown[gp.InputMap.Menu] || IO.MouseReleased[gp.InputMap.Menu]))
+    else if (!(ImGui::IsMouseDown(gp.InputMap.Menu, plot.ID) || ImGui::IsMouseReleased(gp.InputMap.Menu, plot.ID)))
         plot.ContextLocked = false;
 
     // DRAG INPUT -------------------------------------------------------------
@@ -2024,7 +2024,7 @@ bool UpdateInput(ImPlotPlot& plot) {
 
     // SCROLL INPUT -----------------------------------------------------------
 
-    if (any_hov && ImHasFlag(IO.KeyMods, gp.InputMap.ZoomMod)) {
+    if (any_hov && ImHasFlag(IO.KeyMods, gp.InputMap.ZoomMod) && ImGui::TestKeyOwner(ImGuiKey_MouseWheelY, plot.ID)) {
 
         float zoom_rate = gp.InputMap.ZoomRate;
         if (IO.MouseWheel == 0.0f)
@@ -3116,7 +3116,7 @@ void EndPlot() {
         legend.Hovered = legend.Hovered || (ImGui::IsWindowHovered() && legend.RectClamped.Contains(IO.MousePos));
 
         if (legend_scrollable) {
-            if (legend.Hovered) {
+            if (legend.Hovered && ImGui::TestKeyOwner(ImGuiKey_MouseWheelY, plot.Items.ID)) {
                 ImGui::SetKeyOwner(ImGuiKey_MouseWheelY, plot.Items.ID);
                 if (IO.MouseWheel != 0.0f) {
                     ImVec2 max_step = legend.Rect.GetSize() * 0.67f;
@@ -3642,7 +3642,7 @@ void EndSubplots() {
         legend.Hovered = legend.Hovered || (subplot.FrameHovered && legend.RectClamped.Contains(ImGui::GetIO().MousePos));
 
         if (legend_scrollable) {
-            if (legend.Hovered) {
+            if (legend.Hovered && ImGui::TestKeyOwner(ImGuiKey_MouseWheelY, subplot.Items.ID)) {
                 ImGui::SetKeyOwner(ImGuiKey_MouseWheelY, subplot.Items.ID);
                 if (IO.MouseWheel != 0.0f) {
                     ImVec2 max_step = legend.Rect.GetSize() * 0.67f;
